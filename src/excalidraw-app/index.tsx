@@ -62,6 +62,7 @@ import {
   getLibraryItemsFromStorage,
   importFromLocalStorage,
   importUsernameFromLocalStorage,
+  saveUsernameToLocalStorage,
 } from "./data/localStorage";
 import CustomStats from "./CustomStats";
 import { restore, restoreAppState, RestoredDataState } from "../data/restore";
@@ -82,6 +83,7 @@ import { Provider, useAtom } from "jotai";
 import { jotaiStore, useAtomWithInitialValue } from "../jotai";
 import { reconcileElements } from "./collab/reconciliation";
 import { parseLibraryTokensFromUrl, useHandleLibrary } from "../data/library";
+import { GitlabAuth, useGitlab } from "gitlab-auth";
 
 const isExcalidrawPlusSignedUser = document.cookie.includes(
   COOKIES.AUTH_STATE_COOKIE,
@@ -729,13 +731,43 @@ const ExcalidrawWrapper = () => {
   );
 };
 
+const SetUsername = () => {
+  const gitlab = useGitlab();
+  useEffect(() => {
+    if (!importUsernameFromLocalStorage()) {
+      gitlab?.Users.current().then((user) => {
+        const { name } = user as { name: string };
+        const username = name.includes(" ")
+          ? name
+          : name.replace(/([A-Z])([a-z]+)/gu, "$1$2 ").trim();
+        saveUsernameToLocalStorage(username);
+        window.location.reload(); // force reload to adopt username
+      });
+    }
+  }, [gitlab]);
+  return <></>;
+};
+
 const ExcalidrawApp = () => {
+  enum GitLabOAuth {
+    host = "https://gitlab.example.com",
+    applicationId = "",
+  }
   return (
-    <TopErrorBoundary>
-      <Provider unstable_createStore={() => jotaiStore}>
-        <ExcalidrawWrapper />
-      </Provider>
-    </TopErrorBoundary>
+    <GitlabAuth
+      host={GitLabOAuth.host}
+      application_id={GitLabOAuth.applicationId}
+      secret={""}
+      redirect_uri={window.location.origin}
+      scope={"read_user"}
+    >
+      <SetUsername></SetUsername>
+      <TopErrorBoundary>
+        <Provider unstable_createStore={() => jotaiStore}>
+          <ExcalidrawWrapper />
+        </Provider>
+      </TopErrorBoundary>
+    </GitlabAuth>
   );
 };
 
