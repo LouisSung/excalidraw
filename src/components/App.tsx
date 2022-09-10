@@ -259,6 +259,7 @@ import {
   isPointHittingLinkIcon,
   isLocalLink,
 } from "../element/Hyperlink";
+import { STORAGE_KEYS } from "../excalidraw-app/app_constants";
 
 const deviceContextInitialValue = {
   isSmScreen: false,
@@ -332,6 +333,13 @@ class App extends React.Component<AppProps, AppState> {
 
   constructor(props: AppProps) {
     super(props);
+    setTimeout(() => {
+      const isFirstVisit = localStorage.getItem(STORAGE_KEYS.LOCAL_STORAGE_APP_STATE) === null;
+      const searchParams = new URLSearchParams(window.location.search.slice(1));
+      if (isFirstVisit || searchParams.has("gridSize")) {
+        this.setState({ gridSize: GRID_SIZE });
+      }
+    }, 0);
     const defaultAppState = getDefaultAppState();
     const {
       excalidrawRef,

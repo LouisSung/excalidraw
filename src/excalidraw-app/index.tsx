@@ -581,7 +581,7 @@ const ExcalidrawWrapper = () => {
             textAlign: "center",
           }}
         >
-          {isExcalidrawPlusSignedUser ? PlusAppLinkJSX : PlusLPLinkJSX}
+          {/*{isExcalidrawPlusSignedUser ? PlusAppLinkJSX : PlusLPLinkJSX}*/}
         </div>
       );
     },

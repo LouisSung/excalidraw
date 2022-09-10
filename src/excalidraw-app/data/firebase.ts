@@ -212,65 +212,66 @@ export const saveToFirebase = async (
   elements: readonly SyncableExcalidrawElement[],
   appState: AppState,
 ) => {
-  const { roomId, roomKey, socket } = portal;
-  if (
-    // bail if no room exists as there's nothing we can do at this point
-    !roomId ||
-    !roomKey ||
-    !socket ||
-    isSavedToFirebase(portal, elements)
-  ) {
-    return false;
-  }
-
-  const firebase = await loadFirestore();
-  const firestore = firebase.firestore();
-
-  const docRef = firestore.collection("scenes").doc(roomId);
-
-  const savedData = await firestore.runTransaction(async (transaction) => {
-    const snapshot = await transaction.get(docRef);
-
-    if (!snapshot.exists) {
-      const sceneDocument = await createFirebaseSceneDocument(
-        firebase,
-        elements,
-        roomKey,
-      );
-
-      transaction.set(docRef, sceneDocument);
-
-      return {
-        elements,
-        reconciledElements: null,
-      };
-    }
-
-    const prevDocData = snapshot.data() as FirebaseStoredScene;
-    const prevElements = getSyncableElements(
-      await decryptElements(prevDocData, roomKey),
-    );
-
-    const reconciledElements = getSyncableElements(
-      reconcileElements(elements, prevElements, appState),
-    );
-
-    const sceneDocument = await createFirebaseSceneDocument(
-      firebase,
-      reconciledElements,
-      roomKey,
-    );
-
-    transaction.update(docRef, sceneDocument);
-    return {
-      elements,
-      reconciledElements,
-    };
-  });
-
-  FirebaseSceneVersionCache.set(socket, savedData.elements);
-
-  return { reconciledElements: savedData.reconciledElements };
+  return { reconciledElements: null };
+  // const { roomId, roomKey, socket } = portal;
+  // if (
+  //   // bail if no room exists as there's nothing we can do at this point
+  //   !roomId ||
+  //   !roomKey ||
+  //   !socket ||
+  //   isSavedToFirebase(portal, elements)
+  // ) {
+  //   return false;
+  // }
+  //
+  // const firebase = await loadFirestore();
+  // const firestore = firebase.firestore();
+  //
+  // const docRef = firestore.collection("scenes").doc(roomId);
+  //
+  // const savedData = await firestore.runTransaction(async (transaction) => {
+  //   const snapshot = await transaction.get(docRef);
+  //
+  //   if (!snapshot.exists) {
+  //     const sceneDocument = await createFirebaseSceneDocument(
+  //       firebase,
+  //       elements,
+  //       roomKey,
+  //     );
+  //
+  //     transaction.set(docRef, sceneDocument);
+  //
+  //     return {
+  //       elements,
+  //       reconciledElements: null,
+  //     };
+  //   }
+  //
+  //   const prevDocData = snapshot.data() as FirebaseStoredScene;
+  //   const prevElements = getSyncableElements(
+  //     await decryptElements(prevDocData, roomKey),
+  //   );
+  //
+  //   const reconciledElements = getSyncableElements(
+  //     reconcileElements(elements, prevElements, appState),
+  //   );
+  //
+  //   const sceneDocument = await createFirebaseSceneDocument(
+  //     firebase,
+  //     reconciledElements,
+  //     roomKey,
+  //   );
+  //
+  //   transaction.update(docRef, sceneDocument);
+  //   return {
+  //     elements,
+  //     reconciledElements,
+  //   };
+  // });
+  //
+  // FirebaseSceneVersionCache.set(socket, savedData.elements);
+  //
+  // return { reconciledElements: savedData.reconciledElements };
 };
 
 export const loadFromFirebase = async (
@@ -278,24 +279,25 @@ export const loadFromFirebase = async (
   roomKey: string,
   socket: SocketIOClient.Socket | null,
 ): Promise<readonly ExcalidrawElement[] | null> => {
-  const firebase = await loadFirestore();
-  const db = firebase.firestore();
-
-  const docRef = db.collection("scenes").doc(roomId);
-  const doc = await docRef.get();
-  if (!doc.exists) {
-    return null;
-  }
-  const storedScene = doc.data() as FirebaseStoredScene;
-  const elements = getSyncableElements(
-    await decryptElements(storedScene, roomKey),
-  );
-
-  if (socket) {
-    FirebaseSceneVersionCache.set(socket, elements);
-  }
-
-  return restoreElements(elements, null);
+  return null;
+//   const firebase = await loadFirestore();
+//   const db = firebase.firestore();
+//
+//   const docRef = db.collection("scenes").doc(roomId);
+//   const doc = await docRef.get();
+//   if (!doc.exists) {
+//     return null;
+//   }
+//   const storedScene = doc.data() as FirebaseStoredScene;
+//   const elements = getSyncableElements(
+//     await decryptElements(storedScene, roomKey),
+//   );
+//
+//   if (socket) {
+//     FirebaseSceneVersionCache.set(socket, elements);
+//   }
+//
+//   return restoreElements(elements, null);
 };
 
 export const loadFilesFromFirebase = async (

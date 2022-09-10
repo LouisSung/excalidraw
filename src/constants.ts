@@ -87,7 +87,7 @@ export const DEFAULT_VERSION = "{version}";
 
 export const CANVAS_ONLY_ACTIONS = ["selectAll"];
 
-export const GRID_SIZE = 20; // TODO make it configurable?
+export const GRID_SIZE = parseInt(new URL(window.location.href).searchParams.get("gridSize") ?? "20");
 
 export const MIME_TYPES = {
   excalidraw: "application/vnd.excalidraw+json",
